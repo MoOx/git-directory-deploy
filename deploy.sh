@@ -1,15 +1,27 @@
 #!/usr/bin/env bash
 set -o errexit #abort if any command fails
 
+#repository to deploy to. must be readable and writable.
+if [ $GH_TOKEN != "" ]
+then
+	if [ $GH_OWNER = "" ] || [ $GH_PROJECT_NAME = "" ]
+	then
+		echo "You have defined GH_TOKEN variable"
+		echo "You need to define the following variables: GH_OWNER GH_PROJECT_NAME"
+		echo "(GH_OWNER=$GH_OWNER GH_PROJECT_NAME=$GH_PROJECT_NAME)"
+		exit -1
+	fi
+	repo=https://$GH_TOKEN@github.com/$GH_OWNER/$GH_PROJECT_NAME.git
+else
+	repo=origin
+fi
+
 deploy_directory=dist
 deploy_branch=gh-pages
 
 #if no user identity is already set in the current git environment, use this:
 default_username=deploy.sh
 default_email=
-
-#repository to deploy to. must be readable and writable.
-repo=origin
 
 # Parse arg flags
 while : ; do
@@ -61,7 +73,7 @@ function restore_head {
 	else
 		git symbolic-ref HEAD refs/heads/$previous_branch
 	fi
-	
+
 	git reset --mixed
 }
 
